@@ -11,6 +11,9 @@ The email looks like this:
 <!-- ![example email](https://screenshot.googleplex.com/8wu7LRxk7nf9oJB.png) -->
 ![example email](./images/example-report-2025-01-22.png)
 
+Please note: this integration, in its current form, does not send an individual
+email out to each developer with an expired or soon-to-expire API key.  That
+would be an easy modification, but it doesn't do that in it's current form.
 
 ## Disclaimer
 
