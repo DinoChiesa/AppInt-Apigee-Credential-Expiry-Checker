@@ -1,38 +1,42 @@
 <html>
   <head>
     <style>
-     #innerBody > table {
+     #innerBody table {
        border-spacing: 0px;
        border-collapse: separate;
        border: 1px solid black;
      }
-     #innerBody > table tr th, #innerBody > table tr td {
+     #innerBody table tr th, #innerBody table tr td {
        border: 1px solid #242424;
        padding: 2px 2px;
      }
-     #innerBody > table tr th {
+     #innerBody table tr th {
        color:#$tableHeaderFg$;
        background-color:#$tableHeaderBg$;
      }
-     #innerBody > table tr td {
+     #innerBody table tr td {
        color: black;
        background-color: #ffffff;
        border-color:#dcdcdc;
      }
-     #innerBody > table tr td.expired {
+     #innerBody table tr td.expired {
        color: white;
        background-color: #b22222;
      }
-     #innerBody > table tr td.expires-soon {
+     #innerBody table tr td.expires-soon {
        color: white;
        background-color: #ffa500;
+     }
+     #innerBody table tr td.expires-soon-2x {
+       color: black;
+       background-color: #ffec8b;
      }
     </style>
   </head>
   <body>
     <div id='innerBody'>
     <h4>Inputs</h4>
-    <table>
+    <table class='inputs'>
       <tbody>
         <tr>
           <th align='left'>time threshold</th>
@@ -41,6 +45,17 @@
         <tr>
           <th align='left'>Apigee Organization</th>
           <td>$orgName$</td>
+        <tr>
+          <th align='left'>Integration Project</th>
+          <td>$`ProjectId`$</td>
+        </tr>
+        <tr>
+          <th align='left'>Integration Name</th>
+          <td>$`IntegrationName`$</td>
+        </tr>
+        <tr>
+          <th align='left'>Execution Id</th>
+          <td>$`ExecutionId`$</td>
         </tr>
       </tbody>
     </table>
