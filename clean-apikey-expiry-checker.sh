@@ -18,6 +18,14 @@ TIMESTAMP=$(date '+%Y%m%d-%H%M%S')
 APPINT_SA_BASE="${EXAMPLE_NAME}-"
 APPINT_ENDPT=https://integrations.googleapis.com
 
+# Array of environment variable names to check
+env_vars_to_check=(
+  "APPINT_PROJECT"
+  "APIGEE_PROJECTS"
+  "REGION"
+  "EXAMPLE_NAME"
+)
+
 source ./lib/utils.sh
 
 check_auth_configs_and_maybe_delete() {
@@ -156,7 +164,8 @@ check_integrations_and_delete() {
 OUTFILE=$(mktemp /tmp/appint-sample.cleanup.out.XXXXXX)
 printf "\nLogging to %s\n" "$OUTFILE"
 printf "timestamp: %s\n" "$TIMESTAMP" >>"$OUTFILE"
-check_shell_variables
+check_shell_variables "${env_vars_to_check[@]}"
+check_required_commands curl gcloud grep sed tr
 
 # it is necessary to get a token... if using curl or integrationcli for anything
 TOKEN=$(gcloud auth print-access-token)

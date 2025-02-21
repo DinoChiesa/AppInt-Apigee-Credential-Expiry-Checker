@@ -15,42 +15,57 @@ function wrapInTable(rowsHtml) {
   return html;
 }
 
-function handleOneDev(blob) {
-  var devEmail = Object.keys(blob)[0];
+function humanizeExpiry(status, timespan) {
+  if (status == "expires-soon") {
+    return `expires within ${timespan}`;
+  }
+  if (status == "expires-soon-2x") {
+    const parts = timespan.split(" ");
+    const number = Number(parts[0]) * 2;
+    return `expires within ${number} ${parts[1]}`;
+  }
+  return status;
+}
 
-  // blob[devEmail] is an array of appinfos, each one has a single key
-  return blob[devEmail]
-    .map(function (appBlob) {
-      var appName = Object.keys(appBlob)[0];
-      return appBlob[appName]
-        .map(function (appCred) {
-          var status = appCred.reason ? appCred.reason : "none";
-          var row =
-            "  <tr>\n" +
-            "    <td>" +
-            devEmail +
-            "</td>" +
-            " <td>" +
-            appCred.key +
-            "</td>" +
-            " <td>" +
-            appCred.expiryDate +
-            "</td>" +
-            " <td class='" +
-            status +
-            "'>" +
-            appCred.reason +
-            "</td>\n" +
-            "  </tr>";
-          return row;
-        })
-        .join("\n");
-    })
-    .join("\n");
+function handleOneDev(event) {
+  const timespan = event.getParameter("friendlyTimespan");
+  return (blob) => {
+    var devEmail = Object.keys(blob)[0];
+
+    // blob[devEmail] is an array of appinfos, each one has a single key
+    return blob[devEmail]
+      .map(function (appBlob) {
+        var appName = Object.keys(appBlob)[0];
+        return appBlob[appName]
+          .map(function (appCred) {
+            var status = appCred.reason ? appCred.reason : "none";
+            var row =
+              "  <tr>\n" +
+              "    <td>" +
+              devEmail +
+              "</td>" +
+              " <td>" +
+              appCred.key +
+              "</td>" +
+              " <td>" +
+              appCred.expiryDate +
+              "</td>" +
+              " <td class='" +
+              status +
+              "'>" +
+              humanizeExpiry(appCred.reason, timespan) +
+              "</td>\n" +
+              "  </tr>";
+            return row;
+          })
+          .join("\n");
+      })
+      .join("\n");
+  };
 }
 
 function executeScript(event) {
   var alertedCreds = event.getParameter("alertedCreds");
-  var html = alertedCreds.map(handleOneDev).join("\n");
+  var html = alertedCreds.map(handleOneDev(event)).join("\n");
   event.setParameter("formattedEmailTable", wrapInTable(html));
 }

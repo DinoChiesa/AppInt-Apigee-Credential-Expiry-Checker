@@ -24,6 +24,15 @@ SA_REQUIRED_ROLES=("roles/apigee.readOnlyAdmin")
 echo "$INTEGRATION_NAME" >./.integration_name
 
 # readOnlyAdmin is more more than sufficient.
+# Array of environment variable names to check
+env_vars_to_check=(
+  "APPINT_PROJECT"
+  "APIGEE_PROJECTS"
+  "REGION"
+  "EXAMPLE_NAME"
+  "EMAIL_ADDR"
+  "SCHEDULE"
+)
 
 source ./lib/utils.sh
 
@@ -198,6 +207,10 @@ replace_keywords_in_template() {
   sed "s/@@EMAIL_ADDR@@/${EMAIL_ADDR}/g" $INTEGRATION_FILE >$TMP && cp $TMP $INTEGRATION_FILE
   sed "s/@@APIGEE_PROJECTS@@/${APIGEE_PROJECTS}/g" $INTEGRATION_FILE >$TMP && cp $TMP $INTEGRATION_FILE
   sed "s/@@INTEGRATION_NAME@@/${INTEGRATION_NAME}/g" $INTEGRATION_FILE >$TMP && cp $TMP $INTEGRATION_FILE
+  sed "s/@@SCHEDULE@@/${SCHEDULE}/g" $INTEGRATION_FILE >$TMP && cp $TMP $INTEGRATION_FILE
+  #   4+21+*+*+*
+  SCHED_PLUS="${SCHEDULE// /+}"
+  sed "s/@@SCHED_PLUS@@/${SCHED_PLUS}/g" $INTEGRATION_FILE >$TMP && cp $TMP $INTEGRATION_FILE
   rm -f $TMP
 }
 
@@ -206,7 +219,7 @@ replace_content_files_in_template() {
   TMP=$(mktemp /tmp/appint-setup.tmp.out.XXXXXX)
 
   # This slurps in a content file and inserts it into the appropriate place in
-  # the template. For now, content file includes JavaScript and the email text
+  # the template. For now, content files include JavaScripts and the email text
   # body template.
 
   jq --arg content "$(cat ./content/processExpiry.js)" \
@@ -231,14 +244,16 @@ OUTFILE=$(mktemp /tmp/appint-sample.setup.out.XXXXXX)
 printf "Logging to %s\n\n" "$OUTFILE"
 
 printf "timestamp: %s\n" "$TIMESTAMP" >>"$OUTFILE"
-check_shell_variables
+check_shell_variables "${env_vars_to_check[@]}"
+check_required_commands jq curl gcloud grep sed tr
+
 printf "\nrandom seed: %s\n" "$rand_string"
 printf "random seed: %s\n" "$rand_string" >>"$OUTFILE"
 
 TOKEN=$(gcloud auth print-access-token)
 if [[ -z "$TOKEN" ]]; then
-  printf "you must have the gcloud cli on your path to use this tool.\n"
-  printf "you must have the gcloud cli on your path to use this tool.\n" >>"$OUTFILE"
+  printf "Could not get a token with the gcloud cli. See logs in %s\n" "$OUTFILE"
+  printf "Could not get a token with the gcloud cli. See logs in %s\n" "$OUTFILE" >>"$OUTFILE"
   exit 1
 fi
 
@@ -278,7 +293,7 @@ if [[ ${#snapshotarr[@]} -gt 0 ]]; then
 
   printf "The Integration has been published. Now let's wait a bit for it to become available.\n\n"
   sleep 16
-  printf "Now trying to invoke it...\n"
+  printf "Now trying to invoke it. This will run for a few moments...\n"
 
   trigger_id=$(grep cron_trigger "$INTEGRATION_FILE" |
     sed -E 's/"triggerId"://g' |
